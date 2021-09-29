@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using DG.Tweening;
 
 
-public class Contents : MonoBehaviour
+public class Story : MonoBehaviour
 {
     private bool allowDisplayingAllCurrentSentence = false;
     private bool finishDisplayingAllCurrentSentence = false;
@@ -319,13 +319,6 @@ public class Contents : MonoBehaviour
         {
             if(currentHistoryNum != 0)
             {
-                // this.historyText1.GetComponent<Animator>().ResetTrigger("DownMiddleHistoryText");
-                // this.historyText1.GetComponent<Animator>().ResetTrigger("DownBottomHistoryText");                
-                // this.historyText2.GetComponent<Animator>().ResetTrigger("DownMiddleHistoryText");
-                // this.historyText2.GetComponent<Animator>().ResetTrigger("DownBottomHistoryText");
-                // this.historyText3.GetComponent<Animator>().ResetTrigger("DownMiddleHistoryText");
-                // this.historyText3.GetComponent<Animator>().ResetTrigger("DownBottomHistoryText");
-
                 if(this.lastTriggerName1 == "DownMiddleHistoryText" && this.lastTriggerName2 == "" || this.lastTriggerName2 == "DownBottomHistoryText" && this.lastTriggerName3 == ""||this.lastTriggerName3 == "DownBottomHistoryText")
                 {
                     Debug.Log(1);
@@ -377,27 +370,6 @@ public class Contents : MonoBehaviour
                     this.lastTriggerName1 = "DownMiddleHistoryText"; 
 
                 }
-
-                // if(this.lastTriggerName1 == "DownMiddleHistoryText")
-                // {
-                //     this.currentHistoryNum--;
-                //     this.historyText2.gameObject.SetActive(true);
-                //     this.historyText2.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;      
-
-                //     TextAnimation("down", this.historyText2, this.historyText1);
-
-                //     this.historyText1.gameObject.SetActive(false);   
-                // }
-                // else if(this.historyText2.gameObject.activeSelf == true)
-                // {
-                //     this.currentHistoryNum--;
-                //     this.historyText1.gameObject.SetActive(true); 
-                //     this.historyText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence; 
-
-                //     TextAnimation("down", this.historyText1, this.historyText2);
-
-                //     this.historyText2.gameObject.SetActive(false);                                                                                        
-                // }
             }
         }
     }
@@ -434,35 +406,7 @@ public class Contents : MonoBehaviour
             }
         }
     }
-    private void TextAnimation(String direction, UnityEngine.UI.Text text1 = null, UnityEngine.UI.Text text2 = null)
-    {
-        if(direction == "down")
-        {            
-            if (text1 != null) {
-                text1.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
-                this.lastTriggerName1 = "DownMiddleHistoryText";
-                text1.GetComponent<CanvasGroup>().DOFade(1.0f,2.0f);
-            }
-
-            if (text2 != null) {
-                text2.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
-                this.lastTriggerName2 = "DownBottomHistoryText";
-                text2.GetComponent<CanvasGroup>().DOFade(0.0f,2.0f);
-            }
-        }
-        else if(direction == "up")
-        {
-            if (text1 != null) {
-                text1.GetComponent<Animator>().SetTrigger("UpMiddleHistoryText");
-                text1.GetComponent<CanvasGroup>().DOFade(1.0f,2.0f);
-            }
-
-            if (text2 != null) {
-                text2.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
-                text2.GetComponent<CanvasGroup>().DOFade(0.0f,2.0f);
-            }
-        }
-    }
+    
     
     private void CreateJson(TextAsset csv)
     {
