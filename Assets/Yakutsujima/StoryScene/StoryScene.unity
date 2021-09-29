@@ -1929,7 +1929,7 @@ GameObject:
   - component: {fileID: 281884420}
   - component: {fileID: 281884421}
   m_Layer: 5
-  m_Name: HistoryText1
+  m_Name: HistoryText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1951,7 +1951,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 250, y: 525}
+  m_AnchoredPosition: {x: 250, y: -100}
   m_SizeDelta: {x: -500, y: 925}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &281884418
@@ -3291,7 +3291,7 @@ MonoBehaviour:
   storyPanel: {fileID: 1941821693}
   menu: {fileID: 821940793}
   storyText: {fileID: 639193183}
-  historyText1: {fileID: 281884416}
+  historyText: {fileID: 281884416}
   commandFile: {fileID: 4900000, guid: cc5702955427a48d7a42ffde53dee7ac, type: 3}
   commandRelationFile: {fileID: 4900000, guid: 69f49365f5d344182895d1e0f5551ea6, type: 3}
 --- !u!82 &570119555

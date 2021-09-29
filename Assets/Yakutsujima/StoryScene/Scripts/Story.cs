@@ -18,6 +18,9 @@ public class Story : MonoBehaviour
     private bool finishDisplayingAllCurrentSentence = false;
     private bool DownMiddle = false;
     private bool DownBottom = false;
+    private GameObject copyHistoryText1;
+    private GameObject copyHistoryText2;
+    private GameObject copyHistoryText3;
     private GameObject icon;
     private GameObject nextIcon;
     private GameObject storyBackground1;
@@ -37,9 +40,8 @@ public class Story : MonoBehaviour
     private string historyJsonString = "";
     private string jsonString = "";
     private string nowCommandValue = "";
-    private string lastTriggerName1 = "";
-    private string lastTriggerName2 = "";
-    private string lastTriggerName3 = "";
+    private string currentHistoryText = "";
+
     private string slotName = "";
     private Vector3 StartPosition;
 
@@ -69,10 +71,7 @@ public class Story : MonoBehaviour
     public GameObject menu;
  
     public GameObject storyText;
-    public GameObject historyText1;
-    private GameObject historyText2;
-    private GameObject historyText3;
-
+    public GameObject historyText;
     public PlayCommand[] commandsDatum;
     public PlayCommandRelation[] commandRelationDatum;
     public HistoryData[] historyDatum;
@@ -290,84 +289,71 @@ public class Story : MonoBehaviour
             if(this.historyDatum != null && this.historyDatum.Length > 0)
             {  
                 this.storyText.GetComponent<CanvasGroup>().DOFade(0.0f,1f);
-                this.historyText1.GetComponent<CanvasGroup>().alpha = 0;
-                // this.historyText2.GetComponent<CanvasGroup>().alpha = 0;
-                // this.historyText3.GetComponent<CanvasGroup>().alpha = 0;
+
+                this.historyText.GetComponent<CanvasGroup>().alpha = 0;
+                this.historyText.gameObject.SetActive(true);
+                this.historyPanel.SetActive(true);
 
                 this.currentHistoryNum = this.historyDatum.Length-1;
 
-                this.historyText1.gameObject.SetActive(true);
-
-                this.historyPanel.SetActive(true);
-
-                this.lastTriggerName1 = "";
-                this.lastTriggerName2 = ""; 
-
-                if(this.lastTriggerName1 == "" || this.lastTriggerName2 == "")
-                {
-                    this.historyText2 = GameObject.Instantiate(this.historyText1 ,this.historyPanel.transform) as GameObject;
-
-                    this.historyText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
-                    this.historyText1.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
-                    this.historyText1.GetComponent<CanvasGroup>().DOFade(1.0f,0.0f);
-                    this.lastTriggerName1 = "DownMiddleHistoryText";                                                                     
-                  
-                }
+                this.copyHistoryText1 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
+                this.copyHistoryText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                this.copyHistoryText1.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
+                this.copyHistoryText1.GetComponent<CanvasGroup>().DOFade(1.0f,0.0f);
+                this.currentHistoryText = "copyHistoryText1";      
             }     
         }
         else if(this.historyPanel.activeSelf == true)
         {
             if(currentHistoryNum != 0)
             {
-                if(this.lastTriggerName1 == "DownMiddleHistoryText" && this.lastTriggerName2 == "" || this.lastTriggerName2 == "DownBottomHistoryText" && this.lastTriggerName3 == ""||this.lastTriggerName3 == "DownBottomHistoryText")
+
+                if (this.currentHistoryText == "copyHistoryText1")
                 {
                     Debug.Log(1);
                     this.currentHistoryNum--;
-                    this.historyText3 = GameObject.Instantiate(this.historyText2 ,this.historyPanel.transform) as GameObject;
+                    this.copyHistoryText2 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
 
-                    this.historyText1.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
-                    this.historyText1.GetComponent<CanvasGroup>().DOFade(0.0f,1f);
-                    this.lastTriggerName1 = "DownBottomHistoryText";
+                    this.copyHistoryText1.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
+                    this.copyHistoryText1.GetComponent<CanvasGroup>().DOFade(0.0f, 1.0f);
+                    Destroy(this.copyHistoryText1, 1.0f);
 
-                    this.historyText2.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
-                    this.historyText2.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
-                    this.historyText2.GetComponent<CanvasGroup>().DOFade(1.0f,0.0f);
-                    this.lastTriggerName2 = "DownMiddleHistoryText";
-
+                    this.currentHistoryText = "copyHistoryText2";
+                    this.copyHistoryText2.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                    this.copyHistoryText2.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
+                    this.copyHistoryText2.GetComponent<CanvasGroup>().DOFade(1.0f, 0.0f);
                 }
-                else if(this.lastTriggerName1 == "DownBottomHistoryText" && this.lastTriggerName2 == "DownMiddleHistoryText" && this.lastTriggerName3 ==""||this.lastTriggerName3 == "DownBottomHistoryText")
+                else if(this.currentHistoryText == "copyHistoryText2")
                 {
                     Debug.Log(2);
-    
                     this.currentHistoryNum--;
-                    Destroy(this.historyText1);
-                    this.historyText1 = GameObject.Instantiate(this.historyText3 ,this.historyPanel.transform) as GameObject;
+                    this.copyHistoryText3 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
 
-                    this.historyText2.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
-                    this.historyText2.GetComponent<CanvasGroup>().DOFade(0.0f,0.0f);
-                    this.lastTriggerName2 = "DownBottomHistoryText";
+                    this.copyHistoryText2.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
+                    this.copyHistoryText2.GetComponent<CanvasGroup>().DOFade(0.0f, 1.0f);
+                    Destroy(this.copyHistoryText2, 1.0f);
 
-                    this.historyText3.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
-                    this.historyText3.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
-                    this.historyText3.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-                    this.lastTriggerName3 = "DownMiddleHistoryText";
+                    this.currentHistoryText = "copyHistoryText3";
+                    this.copyHistoryText3.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                    this.copyHistoryText3.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
+                    this.copyHistoryText3.GetComponent<CanvasGroup>().DOFade(1.0f, 0.0f);
                     
                 }
-                else if(this.lastTriggerName1 == "DownBottomHistoryText" && this.lastTriggerName2 == "DownBottomHistoryText" && this.lastTriggerName3 == "DownMiddleHistoryText")
+                else if(this.currentHistoryText == "copyHistoryText3")
                 {
                     Debug.Log(3);
                     this.currentHistoryNum--;
-                    Destroy(this.historyText2);
-                    this.historyText2 = GameObject.Instantiate(this.historyText1 ,this.historyPanel.transform) as GameObject;
+                    Destroy(this.copyHistoryText2);
+                    this.copyHistoryText1 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
 
-                    this.historyText3.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
-                    this.historyText3.GetComponent<CanvasGroup>().DOFade(0.0f,0.0f);
-                    this.lastTriggerName3 = "DownBottomHistoryText";
+                    this.copyHistoryText3.GetComponent<Animator>().SetTrigger("DownBottomHistoryText");
+                    this.copyHistoryText3.GetComponent<CanvasGroup>().DOFade(0.0f, 1.0f);
+                    Destroy(this.copyHistoryText3, 1.0f);
 
-                    this.historyText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
-                    this.historyText1.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
-                    this.historyText1.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-                    this.lastTriggerName1 = "DownMiddleHistoryText"; 
+                    this.currentHistoryText = "copyHistoryText1";
+                    this.copyHistoryText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                    this.copyHistoryText1.GetComponent<Animator>().SetTrigger("DownMiddleHistoryText");
+                    this.copyHistoryText1.GetComponent<CanvasGroup>().DOFade(1.0f, 0.0f);
 
                 }
             }
@@ -379,30 +365,58 @@ public class Story : MonoBehaviour
         {
             if(this.historyDatum.Length == this.currentHistoryNum+1)
             {
-                this.historyText1.gameObject.SetActive(false);                                
-                this.historyText2.gameObject.SetActive(false);                                
+                Destroy(this.copyHistoryText1, 1.0f);
+                Destroy(this.copyHistoryText2, 1.0f);
+                Destroy(this.copyHistoryText3, 1.0f);
                 this.historyPanel.SetActive(false);
-                this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,2f);
+                this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
             }
-            else if(this.historyText1.gameObject.activeSelf == true)
+            else if(this.currentHistoryText == "copyHistoryText1")
             {
+                Debug.Log(4);
                 this.currentHistoryNum++;
-                this.historyText2.gameObject.SetActive(true);
-                this.historyText2.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;  
 
-                // TextAnimation("up", this.historyText2, this.historyText1);
+                this.copyHistoryText1.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
+                this.copyHistoryText1.GetComponent<CanvasGroup>().DOFade(0.0f, 0.5f);
+                Destroy(copyHistoryText1, 1.0f);
 
-                this.historyText1.gameObject.SetActive(false);
+                this.currentHistoryText = "copyHistoryText2";
+                this.copyHistoryText2 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
+                this.copyHistoryText2.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                this.copyHistoryText2.GetComponent<Animator>().SetTrigger("UpMiddleHistoryText");
+                this.copyHistoryText2.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);
+                
             }
-            else if(this.historyText2.gameObject.activeSelf == true)
+            else if(this.currentHistoryText == "copyHistoryText2")
             {
+                Debug.Log(6);
                 this.currentHistoryNum++;
-                this.historyText1.gameObject.SetActive(true);
-                this.historyText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;                                            
 
-                // TextAnimation("up", this.historyText1, this.historyText2);
+                this.copyHistoryText2.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
+                this.copyHistoryText2.GetComponent<CanvasGroup>().DOFade(0.0f, 0.5f);
+                Destroy(copyHistoryText2, 1.0f);
 
-                this.historyText2.gameObject.SetActive(false); 
+                this.currentHistoryText = "copyHistoryText3";
+                this.copyHistoryText3 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
+                this.copyHistoryText3.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                this.copyHistoryText3.GetComponent<Animator>().SetTrigger("UpMiddleHistoryText");
+                this.copyHistoryText3.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);                                         
+            }
+            else if(this.currentHistoryText == "copyHistoryText3")
+            {
+                Debug.Log(5);
+                this.currentHistoryNum++;
+
+                this.copyHistoryText3.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
+                this.copyHistoryText3.GetComponent<CanvasGroup>().DOFade(0.0f, 0.5f);
+                Destroy(copyHistoryText3, 1.0f);
+
+                this.currentHistoryText = "copyHistoryText1";
+                this.copyHistoryText1 = GameObject.Instantiate(this.historyText ,this.historyPanel.transform) as GameObject;
+                this.copyHistoryText1.GetComponent<Text>().text = this.historyDatum[this.currentHistoryNum].sentence;
+                this.copyHistoryText1.GetComponent<Animator>().SetTrigger("UpMiddleHistoryText");
+                this.copyHistoryText1.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);                                          
+
             }
         }
     }
