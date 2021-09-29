@@ -44,7 +44,7 @@
      <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUI.cs" />
      <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUnityVersion.cs" />
      <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUtils.cs" />
-     <Compile Include="Assets\Yakutsujima\StoryScene\Scripts\Contents.cs" />
+     <Compile Include="Assets\Yakutsujima\StoryScene\Scripts\Story.cs" />
      <None Include="Assets\Woodland Music Album - 070718\Notes.txt" />
      <None Include="Assets\Dark Future\ReadMe.txt" />
      <None Include="Assets\link.xml" />
