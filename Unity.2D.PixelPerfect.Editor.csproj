@@ -259,6 +259,15 @@
  <Reference Include="Newtonsoft.Json">
  <HintPath>/Users/kurosakiakirahiroshi/Desktop/UnityProject/Yakutsujima/Assets/Plugins/Newtonsoft.Json.dll</HintPath>
  </Reference>
+ <Reference Include="DOTween">
+ <HintPath>/Users/kurosakiakirahiroshi/Desktop/UnityProject/Yakutsujima/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTweenEditor">
+ <HintPath>/Users/kurosakiakirahiroshi/Desktop/UnityProject/Yakutsujima/Assets/Demigiant/DOTween/Editor/DOTweenEditor.dll</HintPath>
+ </Reference>
+ <Reference Include="ICSharpCode.NRefactory">
+ <HintPath>/Users/kurosakiakirahiroshi/Desktop/UnityProject/Yakutsujima/Library/PackageCache/com.unity.render-pipelines.core@7.4.3/Editor/ShaderGenerator/ICSharpCode.NRefactory.dll</HintPath>
+ </Reference>
  <Reference Include="nunit.framework">
  <HintPath>/Users/kurosakiakirahiroshi/Desktop/UnityProject/Yakutsujima/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>
