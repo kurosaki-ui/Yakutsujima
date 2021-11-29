@@ -51,15 +51,17 @@ public class Story : MonoBehaviour
     private bool allowDisplayingAllCurrentSentence = false;
     private bool allowDisplayingFromContinuation = false;
     private bool allowStoryProceed = true;
-    private bool DownMiddle = false;
-    private bool DownBottom = false;
+    private bool cancelButtonClick = false;
+    private bool downMiddle = false;
+    private bool downBottom = false;
     private bool finishDisplayingAllCurrentSentence = false;
 
     private float distTwoPoint = 0.0f;
     private float startHistoryDragTime;
     private float oldPositionT1Y;
     private float oldPositionT2Y;
-    private float startTouchTime;
+    private float beganTouchTime;
+    private float endedTouchTime;
     private Touch t1;
     private Touch t2;
     private float twoPointDist = 0.0f;
@@ -78,6 +80,7 @@ public class Story : MonoBehaviour
     private int currentHistoryNum;
     private int historyId = 0;
     private int nowCommandIndex;
+    private int maxTouchCount;
     private int startRow = 0;
 
     private List <HistoryData> historyData;
@@ -92,17 +95,20 @@ public class Story : MonoBehaviour
     private string nowTime = "";
 
     private Tween loadButtonFade;
+    private Tween loadPanelFade;
     private Tween menuBackgroundFade;
     private Tween operationMethodButtonFade;
+    private Tween operationMethodPanelFade;
     private Tween returnGameButtonFade;
     private Tween returnTitleButtonFade;
     private Tween saveButtonFade;
+    private Tween savePanelFade;
     private Tween settingButtonFade;
+    private Tween settingPanelFade;
     private Tween storyTextFade;
 
-    private Vector3 endPosition;
-    private Vector3 startHistoryDragPosition;
-    private Vector3 startPosition;
+    private Vector2 beganTouchPosition;
+    private Vector2 endedTouchPosition;
 
     public AudioSource sound;
 
@@ -138,6 +144,7 @@ public class Story : MonoBehaviour
     public Slider lightSlider;
     public Slider soundSlider;
 
+
     // Start is called before the first frame update
     void Start()
     {  
@@ -145,7 +152,7 @@ public class Story : MonoBehaviour
 
         if(PlayerPrefs.GetString("currentSlot") != "")
         {
-            StartCoroutine(LoadStory());    
+            StartCoroutine(ReadSaveData());    
         }
         else
         {
@@ -167,64 +174,99 @@ public class Story : MonoBehaviour
         DateTime dt = DateTime.Now;
         this.nowTime = dt.ToString("yyyy/MM/dd HH:mm:ss");
 
-        if(Input.touchCount >= 2)
+
+        if(Input.touchCount == 2)
+        {   
+            this.maxTouchCount = 2;
+        }
+
+        if(Input.touchCount == 1)
         {
-            Debug.Log(2);
-            Touch t1 = Input.GetTouch(0);
-            Touch t2 = Input.GetTouch(1);
-            
-            if(t1.phase == TouchPhase.Ended && t2.phase == TouchPhase.Ended)
+            if(this.maxTouchCount < 2)
             {
-                MenuController();
+                this.maxTouchCount = 1;
+                Touch t = Input.touches[0];
+
+                if(t.phase == TouchPhase.Began)
+                {
+                    this.beganTouchPosition = t.position;
+                    this.beganTouchTime = Time.time;
+                }
+
+                if(t.phase == TouchPhase.Ended)
+                {
+                   this.endedTouchPosition = t.position;
+                   this.endedTouchTime = Time.time;
+                }
             }
         }
-        else if(Input.touchCount == 1)
+            
+        if(Input.touchCount == 0)
         {
-            Debug.Log(1);
+            switch (this.maxTouchCount)
+            {
+                case 2:
+                    if(menu.activeSelf != true)
+                    {
+                        MenuController();
+                    }
+
+                    if(historyPanel.activeSelf == true)
+                    {
+                        Destroy(this.copyHistoryText1);
+                        Destroy(this.copyHistoryText2);
+                        Destroy(this.copyHistoryText3);
+
+                        this.destroyingHistoryText = "";
+                        this.displayingHistoryText = "";
+
+                        this.historyPanel.SetActive(false);
+
+                        this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
+                    }
+
+                    this.maxTouchCount = 0;
+                    break;
+
+                case 1:
+                    Vector2 distance = this.endedTouchPosition - this.beganTouchPosition;
+                    float differenceTime = this.endedTouchTime - this.beganTouchTime;
+
+                    if(chapterPanel.activeSelf != true && menu.activeSelf != true)
+                    {
+                        if(distance.y < -10 && differenceTime < 0.5f && distance.x < - distance.y)
+                        {
+                            DropHistoryControl();
+                        }
+                        else if(distance.y > 10 && differenceTime < 0.5f && distance.x < distance.y)
+                        {
+                            UpHistoryControl();
+                        }     
+                        else
+                        {
+                            if(selectPanel.activeSelf != true && historyPanel.activeSelf != true)
+                            {
+                                if(this.cancelButtonClick != true)
+                                {
+                                    AdvanceSentence();
+                                }
+                            }
+                        }
+                    }
+                    this.cancelButtonClick = false;
+                    this.maxTouchCount = 0;
+                    break;
+            }
         }
-        
+
+        // Debug.Log(Input.touchCount);
+        // Debug.Log(t.phase);
+        // Debug.Log(t.position);
         if (Input.GetKeyDown(KeyCode.K))
         {
             MenuController();
         }
 
-    }
-    private void MenuController()
-    {
-        if(this.menu.activeSelf == false)
-        {
-            if(this.historyPanel.activeSelf == true)
-            {
-                Destroy(this.copyHistoryText1, 1.0f);
-                Destroy(this.copyHistoryText2, 1.0f);
-                Destroy(this.copyHistoryText3, 1.0f);
-                this.historyPanel.SetActive(false);
-                this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
-            }
-            else
-            {
-                this.storyTextFade.Kill();
-                OpenMenu();
-            }
-        }
-        else
-        {
-            CloseMenu();
-        }
-    }
-    private void OpenMenu()
-    {
-        this.storyText.GetComponent<CanvasGroup>().alpha = 0;
-        this.menu.SetActive(true);
-        // this.menuBackgroundFade.Kill();
-        this.menuBackground.GetComponent<CanvasGroup>().alpha = 1;
-
-        this.saveButtonFade = GameObject.Find("SaveButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-        this.settingButtonFade = GameObject.Find("SettingButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-        this.operationMethodButtonFade = GameObject.Find("OperationMethodButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-        this.loadButtonFade = GameObject.Find("LoadButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);                
-        this.returnGameButtonFade = GameObject.Find("ReturnGameButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
-        this.returnTitleButtonFade = GameObject.Find("ReturnTitleButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
     }
 
     private void StartStory(int startRow, TextAsset commandFile)
@@ -383,7 +425,6 @@ public class Story : MonoBehaviour
             this.historyData = new List<HistoryData>();
         }
 
-        Debug.Log(this.storyText.GetComponent<Text>().text);
         this.historyData.Add(new HistoryData{id = this.historyId, sentence = this.storyText.GetComponent<Text>().text});
         this.historyJsonString = JsonConvert.SerializeObject(historyData);
         this.historyDatum = JsonConvert.DeserializeObject<HistoryData[]>(this.historyJsonString);
@@ -417,13 +458,14 @@ public class Story : MonoBehaviour
         return commandRelationDatum[currentId[selectButtonNum - 1]].nextFile;
     }
 
+    // スワイプ操作
     private void DropHistoryControl()
     {
         if(this.historyPanel.activeSelf == false)
         {
             if(this.historyDatum != null && this.historyDatum.Length > 0)
             {  
-                this.storyText.GetComponent<CanvasGroup>().DOFade(0.0f,1f);
+                this.storyText.GetComponent<CanvasGroup>().DOFade(0.0f, 0.5f);
 
                 this.historyText.GetComponent<CanvasGroup>().alpha = 0;
                 this.historyText.gameObject.SetActive(true);
@@ -576,7 +618,9 @@ public class Story : MonoBehaviour
             }
         }
     }
-    private void AdvanceStory()
+
+    // 文章を進める
+    private void AdvanceSentence()
     {
         if(this.allowStoryProceed == true)
         {
@@ -604,6 +648,7 @@ public class Story : MonoBehaviour
         }
     }
 
+    //Jsonの作成
     private void CreateJson(TextAsset csv)
     {
         StringReader reader = new StringReader(csv.text);
@@ -643,7 +688,8 @@ public class Story : MonoBehaviour
         this.jsonString = JsonConvert.SerializeObject(listObjResult);
     }
 
-    public void ReStartStory(int selectButtonNum)
+    //次のCsvFileへ
+    public void NextCommandFile(int selectButtonNum)
     {
         CreateHistoryData();
         this.storyText.SetActive(true);
@@ -655,33 +701,43 @@ public class Story : MonoBehaviour
         StartStory(0, this.commandFile);
     }
 
-    public void PointerDown()
+    // Menuのフェードを管理
+    private void MenuController()
     {
-        this.startPosition = Input.mousePosition;
-        this.startTouchTime = Time.time;
-    }
-
-    public void PointerUp()
-    {
-        this.endPosition = Input.mousePosition;
-        Vector2 distance = Input.mousePosition - this.startPosition;
-        float differenceTime = Time.time - this.startTouchTime;
-
-        if(Input.touchCount == 1 || Input.GetMouseButtonUp(0))
+        if(this.menu.activeSelf == false)
         {
-            if(distance.y < -10 && differenceTime < 0.5f)
+            if(this.historyPanel.activeSelf == true)
             {
-                DropHistoryControl();
+                Destroy(this.copyHistoryText1, 1.0f);
+                Destroy(this.copyHistoryText2, 1.0f);
+                Destroy(this.copyHistoryText3, 1.0f);
+                this.historyPanel.SetActive(false);
+                this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
             }
-            else if(distance.y > 10 && differenceTime < 0.5f)
-            {
-
-            }     
             else
             {
-                AdvanceStory();
+                this.storyTextFade.Kill();
+                OpenMenu();
             }
         }
+        else
+        {
+            CloseMenu();
+        }
+    }
+    private void OpenMenu()
+    {
+        this.storyText.GetComponent<CanvasGroup>().alpha = 0;
+        this.menu.SetActive(true);
+        // this.menuBackgroundFade.Kill();
+        this.menuBackground.GetComponent<CanvasGroup>().alpha = 1;
+
+        this.saveButtonFade = GameObject.Find("SaveButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.settingButtonFade = GameObject.Find("SettingButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.operationMethodButtonFade = GameObject.Find("OperationMethodButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.loadButtonFade = GameObject.Find("LoadButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);                
+        this.returnGameButtonFade = GameObject.Find("ReturnGameButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.returnTitleButtonFade = GameObject.Find("ReturnTitleButtonText").GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
     }
     public void CloseMenu()
     {
@@ -706,28 +762,37 @@ public class Story : MonoBehaviour
         this.operationMethodPanel.SetActive(false);
         this.savePanel.SetActive(false);
         this.settingPanel.SetActive(false);
+        this.cancelButtonClick = true;
         this.menu.SetActive(false);
     }
-    
-    public void HistoryBeginDrag()
+
+    //Menu内で管理しているPanelsのフェード 
+    public void CloseOperationMethodPanel()
     {
-        this.startHistoryDragPosition = Input.mousePosition;
-        this.startHistoryDragTime = Time.time;
+        this.operationMethodPanelFade.Kill();
+        this.operationMethodPanel.GetComponent<CanvasGroup>().alpha = 0;       
+        this.operationMethodPanel.SetActive(false);
     }
 
-    public void HistoryEndDrag()
-    {  
-        Vector2 distance = Input.mousePosition - this.startHistoryDragPosition;
-        float differenceTime = Time.time - this.startHistoryDragTime;
+    public void CloseLoadPanel()
+    { 
+        this.loadPanelFade.Kill();
+        this.loadPanel.GetComponent<CanvasGroup>().alpha = 0;       
+        this.loadPanel.SetActive(false);
+    }
 
-        if(distance.y < -10 && differenceTime < 0.2f)
-        {
-            DropHistoryControl();
-        }
-        else if (distance.y > 10 && differenceTime < 0.2f)
-        {
-            UpHistoryControl();        
-        }
+    public void CloseSavePanel()
+    {
+        this.savePanelFade.Kill();
+        this.savePanel.GetComponent<CanvasGroup>().alpha = 0;       
+        this.savePanel.SetActive(false);
+    }
+
+    public void CloseSettingPanel()
+    {
+        this.settingPanelFade.Kill();
+        this.settingPanel.GetComponent<CanvasGroup>().alpha = 0;       
+        this.settingPanel.SetActive(false);
     }
 
     public void OpenLoadPanel()
@@ -746,7 +811,7 @@ public class Story : MonoBehaviour
             }
         }
 
-        this.loadPanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.loadPanelFade = this.loadPanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
     }
 
     public void OpenSavePanel()
@@ -765,28 +830,39 @@ public class Story : MonoBehaviour
             }
         }
 
-        this.savePanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+        this.savePanelFade = this.savePanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
     }
 
+    public void OpenSettingPanel()
+    {
+        this.settingPanel.SetActive(true);
+        this.settingPanelFade = this.settingPanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+    }
+    
+    public void OpenOperationMethodPanel()
+    {
+        this.operationMethodPanel.SetActive(true);
+        this.operationMethodPanelFade = this.operationMethodPanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
+    }
+    
+
+    //設定のリセット 
     public void RestoreDefault()
     {
         this.characterSpeedSlider.value = 0.03f;
         this.soundSlider.value = 0.5f;
     }
 
+
+    // タイトルに戻るボタン
     public void ReturnTitle()
     {
         SceneManager.LoadScene("TitleScene");
     }
 
-    public void Load(string slotName)
-    {
-        if(PlayerPrefs.GetString(slotName + "time") != "")
-        {
-            PlayerPrefs.SetString("currentSlot",slotName);
-            SceneManager.LoadScene("StoryScene");
-        }
-    }
+
+　  //環境設定
+    // スピード等を変更した際、保存する
     public void PlayerPrefsCharacterSpeed()
     {
         PlayerPrefs.SetFloat("characterSpeed", this.characterSpeedSlider.value);                
@@ -818,7 +894,17 @@ public class Story : MonoBehaviour
 
         GameObject.Find("Save" + slotName).GetComponent<Text>().text = PlayerPrefs.GetString(slotName + "time");
     }
-    private IEnumerator LoadStory()
+
+    public void Load(string slotName)
+    {
+        if(PlayerPrefs.GetString(slotName + "time") != "")
+        {
+            PlayerPrefs.SetString("currentSlot",　slotName);
+            SceneManager.LoadScene("StoryScene");
+        }
+    }
+  
+    private IEnumerator ReadSaveData()
     {
         this.nowChapter = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "chapter");
 

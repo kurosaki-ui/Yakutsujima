@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 71713926}
   - component: {fileID: 71713925}
   - component: {fileID: 71713924}
+  - component: {fileID: 71713927}
   m_Layer: 0
   m_Name: LoadButton
   m_TagString: Untagged
@@ -251,6 +252,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 71713922}
   m_CullTransparentMesh: 0
+--- !u!225 &71713927
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 71713922}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &245345010
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,9 +346,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 603681543}
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 593417047}
+        m_MethodName: CloseLoadPanel
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -679,6 +692,7 @@ GameObject:
   - component: {fileID: 342575450}
   - component: {fileID: 342575449}
   - component: {fileID: 342575448}
+  - component: {fileID: 342575451}
   m_Layer: 0
   m_Name: StartButton
   m_TagString: Untagged
@@ -797,6 +811,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342575446}
   m_CullTransparentMesh: 0
+--- !u!225 &342575451
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 342575446}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &419852876
 GameObject:
   m_ObjectHideFlags: 0
@@ -1240,7 +1266,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a47b8572339204e1db9839a8c615066e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultPanel: {fileID: 1306613559}
   loadPanel: {fileID: 603681543}
+  operationMethodPanel: {fileID: 1027276955}
+  startButton: {fileID: 342575446}
+  loadButton: {fileID: 71713922}
 --- !u!1 &603681543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1251,6 +1281,7 @@ GameObject:
   m_Component:
   - component: {fileID: 603681544}
   - component: {fileID: 603681546}
+  - component: {fileID: 603681545}
   m_Layer: 5
   m_Name: LoadPanel
   m_TagString: Untagged
@@ -1282,6 +1313,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &603681545
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603681543}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!222 &603681546
 CanvasRenderer:
   m_ObjectHideFlags: 0
