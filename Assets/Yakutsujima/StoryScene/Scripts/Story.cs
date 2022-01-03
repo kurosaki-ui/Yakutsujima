@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using System.Globalization;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -32,19 +33,19 @@ public class PlayCommandRelation
     public string nextFile;
 }
 
-public class PlayerPrefsData
-{
-    public int nowCommandIndex;
-    public float iconPosX;
-    public float iconPosY;
-    public float nextIconPosX;
-    public float nextIconPosY;
-    public string background;
-    public string chapter;
-    public string historyJsonString;
-    public string sentence;
-    public TextAsset csvFile;
-}
+// public class PlayerPrefsData
+// {
+//     public int nowCommandIndex;
+//     public float iconPosX;
+//     public float iconPosY;
+//     public float nextIconPosX;
+//     public float nextIconPosY;
+//     public string background;
+//     public string chapter;
+//     public string historyJsonString;
+//     public string sentence;
+//     public TextAsset csvFile;
+// }
 
 public class Story : MonoBehaviour
 {
@@ -71,12 +72,12 @@ public class Story : MonoBehaviour
     private float vMax = 5.0f;
     private float x = 0;
     private float y = 0;
+    private float nowIconPosX = 0;
+    private float nowIconPosY = 0;
 
     private GameObject copyHistoryText1;
     private GameObject copyHistoryText2;
     private GameObject copyHistoryText3;
-    private GameObject icon;
-    private GameObject nextIcon;
 
     private int currentHistoryNum;
     private int historyId = 0;
@@ -109,6 +110,9 @@ public class Story : MonoBehaviour
     private Vector2 endedTouchPosition;
 
     public AudioSource sound;
+
+    public GameObject icon;
+    public GameObject nextIcon;
 
     public GameObject chapterPanel;
     public GameObject historyPanel;
@@ -205,7 +209,8 @@ public class Story : MonoBehaviour
                 case 2:
                     if(menu.activeSelf != true)
                     {
-                        MenuController();
+                        this.allowDisplayingAllCurrentSentence = true;
+                        MenuController();                    
                     }
 
                     if(historyPanel.activeSelf == true)
@@ -256,9 +261,11 @@ public class Story : MonoBehaviour
             }
         }
 
-        // Debug.Log(Input.touchCount);
-        // Debug.Log(t.phase);
-        // Debug.Log(t.position);
+        if(Input.GetMouseButtonUp(0))
+        {
+            AdvanceSentence();
+        }
+
         if (Input.GetKeyDown(KeyCode.K))
         {
             MenuController();
@@ -271,10 +278,8 @@ public class Story : MonoBehaviour
         CreateJson(commandFile);
         this.commandsDatum = JsonConvert.DeserializeObject<PlayCommand[]>(this.jsonString);
 
-        this.icon = this.storyText.transform.Find("Icon").gameObject;
-        this.nextIcon = this.storyText.transform.Find("NextIcon").gameObject;
-
         PlayerPrefs.SetString("currentSlot", "");
+
         StartCoroutine(CommandLoop(startRow));
     }
 
@@ -291,7 +296,6 @@ public class Story : MonoBehaviour
     private IEnumerator Background()
     {
         this.storyBackground.GetComponent<Image>().sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Yakutsujima/StoryScene/Images/Chapters/" + this.nowCommandValue + ".png");
-
         yield break;
     }
 
@@ -326,11 +330,6 @@ public class Story : MonoBehaviour
 
     private IEnumerator Select()
     {
-        if(this.storyText.GetComponent<Text>().text != "")
-        {
-            CreateHistoryData();
-        }
-
         this.selectPanel.SetActive(true);
         this.storyText.GetComponent<Text>().text = null;
 
@@ -381,9 +380,17 @@ public class Story : MonoBehaviour
                 }
                 else
                 {
-                    currentSentence += sentenceSplit[i] + "\n";
+                    if(i == sentenceSplit.Length - 1)
+                    {
+                        currentSentence += sentenceSplit[i];
+                    }
+                    else
+                    {
+                        currentSentence += sentenceSplit[i] + "\n";
+                    }
                 }
             }
+
         }
 
         DisplaySentenceController(currentSentence);
@@ -392,20 +399,136 @@ public class Story : MonoBehaviour
         this.displaySentenceControllerfinish = false;
 
         this.storyText.GetComponent<Text>().text += "\n\n";
-        this.icon.GetComponent<RectTransform>().anchoredPosition = new Vector3(x,y);
-        this.nextIcon.GetComponent<RectTransform>().anchoredPosition = new Vector3(x,y);
 
-        if(this.commandsDatum[this.nowCommandIndex + 1].content != "NextPage" && this.commandsDatum[this.nowCommandIndex + 1].content != "")
+        IconController(sentenceSplit);
+
+        this.icon.GetComponent<RectTransform>().anchoredPosition = new Vector3(this.x, this.y);
+        this.nextIcon.GetComponent<RectTransform>().anchoredPosition = new Vector3(this.x, this.y);
+
+        this.nowIconPosX = this.x;
+        this.nowIconPosY = this.y;
+        this.y = this.y - 126;
+
+        if(this.commandsDatum[this.nowCommandIndex + 1].content != "NextPage" && this.commandsDatum[this.nowCommandIndex + 1].content != "" )
         {
-            icon.SetActive(true);
+            if (this.commandsDatum[this.nowCommandIndex + 1].content == "Select")
+            {
+                nextIcon.SetActive(true);
+                //0が非アクティブ 1がアクティブ 
+                PlayerPrefs.SetInt("icon", 0);               
+                this.y = 0;
+            }
+            else
+            {
+                icon.SetActive(true);
+                this.activeIcons = "icon";         
+            }
         }
         else
         {
             nextIcon.SetActive(true);
+            this.activeIcons = "nextIcon";                     
             this.y = 0;
         }
 
         yield return new WaitUntil(()=> finishDisplayingAllCurrentSentence);
+    }
+    private string activeIcons;
+
+    private void IconController(string[] sentenceSplit)
+    {
+        int characterfontSize = this.storyText.GetComponent<Text>().fontSize;
+        StringInfo stringInfo = new StringInfo(sentenceSplit[sentenceSplit.Length - 1]);
+
+        if(this.y == 0)
+        {
+            switch (sentenceSplit.Length)
+            { 
+                case 1:
+                    this.y = 0;
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 2:
+                    this.y = - 63;  
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 3:
+                    this.y = - 126; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 4:
+                    this.y = - 189; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 5:
+                    this.y = - 252; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 6:
+                    this.y = - 315; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 7:
+                    this.y = - 378; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 8:
+                    this.y = - 441; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+            }  
+        }
+        else
+        {
+            switch (sentenceSplit.Length)
+            { 
+                case 1:
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 2:
+                    this.y += - 63;  
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 3:
+                    this.y += - 126; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 4:
+                    this.y += - 189; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 5:
+                    this.y += - 252; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 6:
+                    this.y += - 315; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 7:
+                    this.y += - 378; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+
+                case 8:
+                    this.y += - 441; 
+                    this.x =  characterfontSize * stringInfo.LengthInTextElements;
+                    break;
+            }           
+        }
     }
 
     private async void DisplaySentenceController(string currentSentence)
@@ -464,7 +587,6 @@ public class Story : MonoBehaviour
                 }
             }
         }
-        Debug.Log(currentId[selectButtonNum - 1]);
         return commandRelationDatum[currentId[selectButtonNum - 1]].nextFile;
     }
 
@@ -557,8 +679,46 @@ public class Story : MonoBehaviour
             }
         }
     }
+    private async Task<bool> FinishUpHistory()
+    {
+        switch (this.displayingHistoryText)
+        {
+            case "copyHistoryText1":
+            this.displayingHistoryText = "";
+            this.copyHistoryText1.GetComponent<Animator>().SetTrigger("UpTopHistoryText"); 
+            while(this.copyHistoryText1.GetComponent<CanvasGroup>().alpha != 0) 
+            {
+                await Task.Delay(10);
+            }
+            break;
 
-    private void UpHistoryControl()
+            case "copyHistoryText2":
+            this.displayingHistoryText = "";
+            this.copyHistoryText2.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
+            while(this.copyHistoryText2.GetComponent<CanvasGroup>().alpha != 0) 
+            {
+                await Task.Delay(10);
+            }
+            break;
+
+            case "copyHistoryText3":
+            this.displayingHistoryText = "";
+            this.copyHistoryText3.GetComponent<Animator>().SetTrigger("UpTopHistoryText");
+            while(this.copyHistoryText3.GetComponent<CanvasGroup>().alpha != 0) 
+            {
+                await Task.Delay(10);
+            }
+            break;                                    
+        }
+
+        this.destroyingHistoryText = "";
+        this.historyPanel.SetActive(false);
+
+        this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
+
+        return true;
+    }
+    private async void UpHistoryControl()
     {
         if(this.historyPanel.activeSelf == true)
         {
@@ -575,23 +735,14 @@ public class Story : MonoBehaviour
                     break;                                    
             }
 
-            if(this.historyDatum.Length == this.currentHistoryNum + 1)
+            if(this.historyDatum.Length == this.currentHistoryNum + 1 && displayingHistoryText != "")
             {
                 if (selectPanel.activeSelf == true)
                 {
                     selectPanel.GetComponent<CanvasGroup>().DOFade(1.0f, 0.5f);
                 }
 
-                Destroy(this.copyHistoryText1);
-                Destroy(this.copyHistoryText2);
-                Destroy(this.copyHistoryText3);
-
-                this.destroyingHistoryText = "";
-                this.displayingHistoryText = "";
-
-                this.historyPanel.SetActive(false);
-
-                this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,0.5f);
+                await FinishUpHistory();
             }
             else if(this.displayingHistoryText == "copyHistoryText1")
             {
@@ -711,9 +862,9 @@ public class Story : MonoBehaviour
     public void NextCommandFile(int selectButtonNum)
     {
         CreateHistoryData();
+        this.selectPanel.SetActive(false);
         this.storyText.SetActive(true);
         this.storyText.GetComponent<Text>().text = null;
-        FileExchange(selectButtonNum);
 
         this.commandFile = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Yakutsujima/StoryScene/CsvFiles/Chapters/" + FileExchange(selectButtonNum) + ".csv");
 
@@ -751,6 +902,7 @@ public class Story : MonoBehaviour
     }
     private void OpenMenu()
     {
+        this.sound.Pause();
         this.storyText.GetComponent<CanvasGroup>().alpha = 0;
         this.menu.SetActive(true);
         // this.menuBackgroundFade.Kill();
@@ -773,7 +925,7 @@ public class Story : MonoBehaviour
         {
             this.menuButtons[i].GetComponent<CanvasGroup>().alpha = 0;
         }
-
+        this.sound.UnPause();
         this.storyTextFade = this.storyText.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);
         this.storyBackground.GetComponent<CanvasGroup>().alpha = 1;
         
@@ -870,7 +1022,7 @@ public class Story : MonoBehaviour
     //設定のリセット 
     public void RestoreDefault()
     {
-        this.characterSpeedSlider.value = 3.0f;
+        this.characterSpeedSlider.value = 25.0f;
         this.soundSlider.value = 0.5f;
     }
 
@@ -906,7 +1058,10 @@ public class Story : MonoBehaviour
         PlayerPrefs.SetString(slotName + "historySentence", this.historyJsonString);
         PlayerPrefs.SetString(slotName + "sound", this.sound.clip.name);
         PlayerPrefs.SetString(slotName + "sentence", this.storyText.GetComponent<Text>().text);
+        PlayerPrefs.SetString(slotName + "activeIcons", this.activeIcons);
         PlayerPrefs.SetString(slotName + "time", this.nowTime);
+        PlayerPrefs.SetFloat(slotName + "iconX", this.nowIconPosX);
+        PlayerPrefs.SetFloat(slotName + "iconY", this.nowIconPosY);
         PlayerPrefs.Save();
 
         GameObject.Find("Save" + slotName).GetComponent<Text>().text = PlayerPrefs.GetString(slotName + "time");
@@ -925,18 +1080,24 @@ public class Story : MonoBehaviour
     {
         this.nowChapter = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "chapter");
 
-        if(this.characterSpeedSlider.value != 3.0f)
+        if(this.characterSpeedSlider.value != 25.0f)
         {
             this.characterSpeedSlider.value = PlayerPrefs.GetFloat("characterSpeed");
         }
 
+        this.activeIcons = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "activeIcons");
         this.commandFile.name = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "commandFileName");
         this.commandFile = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Yakutsujima/StoryScene/CsvFiles/Chapters/" + this.nowChapter + "/" + this.commandFile.name + ".csv");
         this.historyId = PlayerPrefs.GetInt(PlayerPrefs.GetString("currentSlot") + "historyId");
         this.historyJsonString = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "historySentence");
         this.historyDatum = JsonConvert.DeserializeObject<HistoryData[]>(this.historyJsonString);
         this.historyData = JsonConvert.DeserializeObject<List<HistoryData>>(this.historyJsonString);
+        this.nowCommandIndex = PlayerPrefs.GetInt(PlayerPrefs.GetString("currentSlot") + "nowCommandIndex");
+        this.nowContentName = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "nowContentName");
+        this.nowIconPosX = PlayerPrefs.GetFloat(PlayerPrefs.GetString("currentSlot") + "iconX");
+        this.nowIconPosY = PlayerPrefs.GetFloat(PlayerPrefs.GetString("currentSlot") + "iconY");
         this.sound.clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Yakutsujima/StoryScene/Musics/Chapters/" + this.nowChapter + "/" + PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "sound") + ".mp3");
+        this.storyBackground.GetComponent<Image>().sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Yakutsujima/StoryScene/Images/Chapters/" + this.nowChapter + "/" + PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "background") + ".png");
         
         if(this.soundSlider.value != 0.5f)
         {
@@ -944,21 +1105,45 @@ public class Story : MonoBehaviour
         }
         this.sound.Play();        
 
-        if(PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "nowContentName") == "Select")
+        if(this.nowContentName == "Select")
         {
-            StartStory(PlayerPrefs.GetInt(PlayerPrefs.GetString("currentSlot") + "nowCommandIndex") - 1, this.commandFile);          
+            this.icon.SetActive(false);
+            this.nextIcon.SetActive(false);
+            StartStory(this.nowCommandIndex - 1, this.commandFile);          
         }
         else
         {
+            // iconがアクティブ かつ　nextIconが非アクティブの時
+            if (this.activeIcons == "icon")
+            {
+                this.icon.SetActive(true);
+                this.icon.GetComponent<RectTransform>().anchoredPosition = new Vector3(this.nowIconPosX, this.nowIconPosY);
+
+                this.x = this.nowIconPosX;
+                this.y = this.nowIconPosY;
+                this.y = this.y - 126;
+            }
+            else if(this.activeIcons == "nextIcon")
+            {
+                this.nextIcon.SetActive(true);        
+                this.nextIcon.GetComponent<RectTransform>().anchoredPosition = new Vector3(this.nowIconPosX, this.nowIconPosY);
+
+                this.x = this.nowIconPosX;
+                this.y = this.nowIconPosY;
+                this.y = 0;
+            }
+
             this.storyText.GetComponent<Text>().text = PlayerPrefs.GetString(PlayerPrefs.GetString("currentSlot") + "sentence");
             this.allowStoryProceed = false;
 
             yield return new WaitUntil(()=> this.allowDisplayingFromContinuation);
 
             this.allowStoryProceed = true;
+            this.icon.SetActive(false);
+            this.nextIcon.SetActive(false);
             this.allowDisplayingFromContinuation = false;
-
-            StartStory(PlayerPrefs.GetInt(PlayerPrefs.GetString("currentSlot") + "nowCommandIndex") + 1, this.commandFile);    
+    
+            StartStory(this.nowCommandIndex + 1, this.commandFile);    
         }
         
     }

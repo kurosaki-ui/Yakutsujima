@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Title : MonoBehaviour
 {
@@ -17,7 +19,10 @@ public class Title : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        this.loadPanel.SetActive(false);
+        this.loadPanel.GetComponent<CanvasGroup>().alpha = 0;
+        this.operationMethodPanel.SetActive(false);
+        this.operationMethodPanel.GetComponent<CanvasGroup>().alpha = 0;
     }
 
     // Update is called once per frame
@@ -28,12 +33,18 @@ public class Title : MonoBehaviour
             PlayerPrefs.DeleteAll();
             Debug.Log("セーブ消去");
         }
+
+        if(this.operationMethodPanel.GetComponent<CanvasGroup>().alpha == 1)
+        {
+            PlayerPrefs.SetString("currentSlot", "");
+            SceneManager.LoadScene("StoryScene");
+        }
     }
 
     public void Newgame()
     {
-        PlayerPrefs.SetString("currentSlot", "");
-        SceneManager.LoadScene("StoryScene");
+        this.operationMethodPanel.SetActive(true);
+        this.operationMethodPanel.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);
     }
 
     public void OpenLoadPanel()
@@ -54,13 +65,13 @@ public class Title : MonoBehaviour
         this.loadButtonFade.Kill();
         this.startButton.GetComponent<CanvasGroup>().alpha = 0;
         this.loadButton.GetComponent<CanvasGroup>().alpha = 0;
-        this.loadPanelFade = this.loadPanel.GetComponent<CanvasGroup>().DOFade(1.0f,1.0f);        
+        this.loadPanelFade = this.loadPanel.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);        
     }
 
     public void CloseLoadPanel()
     {
-        this.startButtonFade = this.startButton.GetComponent<CanvasGroup>().DOFade(1.0f,2.0f);
-        this.loadButtonFade = this.loadButton.GetComponent<CanvasGroup>().DOFade(1.0f,2.0f);
+        this.startButtonFade = this.startButton.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);
+        this.loadButtonFade = this.loadButton.GetComponent<CanvasGroup>().DOFade(1.0f, 1.0f);
         this.loadPanel.SetActive(false);
         this.loadPanelFade.Kill();
         this.loadPanel.GetComponent<CanvasGroup>().alpha = 0;        

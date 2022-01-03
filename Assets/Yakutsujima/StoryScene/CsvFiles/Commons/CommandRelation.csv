@@ -2,9 +2,9 @@ ID,CurrentFile,SelectNumber,NextFile
 0,Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed,1,Chapter1/Command1-dc31fc50-355e-4831-97f1-85138b035ee4
 1,Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed,2,Chapter1/Command1-dc31fc50-355e-4831-97f1-85138b035ee4
 2,Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed,3,Chapter1/Command1-dc31fc50-355e-4831-97f1-85138b035ee4
-3,Command1,1,Command0
-4,Command1,2,Command5
-5,Command1,3,Command6
+3,Command1-dc31fc50-355e-4831-97f1-85138b035ee4,1,Chapter1/Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed
+4,Command1-dc31fc50-355e-4831-97f1-85138b035ee4,2,Chapter1/Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed
+5,Command1-dc31fc50-355e-4831-97f1-85138b035ee4,3,Chapter1/Command0-e40da778-c81a-42ba-8bdc-a7a42064c0ed
 6,Command2,1,Command7
 7,Command2,2,Command8
 8,Command3,0,
